@@ -1,6 +1,3 @@
-# subslasher
-SubDomain finder tool in connection with Secureity Trails API and different sources.
-This ia a Passive Recon tool.
 # Subslasher
 
 ![banner](https://img.shields.io/badge/Subdomain-Enumerator-blueviolet?style=for-the-badge) ![python](https://img.shields.io/badge/Made%20with-Python-FFD43B?style=for-the-badge&logo=python) ![license](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
