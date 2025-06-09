@@ -1,6 +1,35 @@
 # subslasher
 SubDomain finder tool in connection with Secureity Trails API and different sources.
 This ia a Passive Recon tool.
+# Subslasher
+
+![banner](https://img.shields.io/badge/Subdomain-Enumerator-blueviolet?style=for-the-badge) ![python](https://img.shields.io/badge/Made%20with-Python-FFD43B?style=for-the-badge&logo=python) ![license](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+> ⚔️ *Subslasher* is a powerful OSINT-based subdomain enumerator that uses `crt.sh`, SecurityTrails API, Google Dorks, and DuckDuckGo to find exposed subdomains recursively.
+
+---
+
+## 💡 Features
+
+- 🔍 **Multisource Enumeration** (CRT.sh, SecurityTrails, Google Dorking, DuckDuckGo)
+- 🔁 **Recursive Subdomain Hunting**
+- 🔑 **API Key Rotation** (SecurityTrails)
+- 💻 **Multi-threaded Scanning**
+- ✨ **Beautiful CLI banners with `rich`**
+
+---
+
+## 🛠 Installation
+
+```bash
+git clone https://github.com/Sanket-kumbhar/Subslasher.git
+cd Subslasher
+pip install -r requirements.txt
+
+
+
+
+
 
 usage: subdomain_enum.py [-h] -i INPUT [-a API] [-o OUTPUT] [-t THREADS]
 
@@ -39,4 +68,5 @@ python3 subslasher.py -i root_domains.txt -a api_keys.txt -o output.csv -r 2 -t 
 
 Requirments: 
 pip install requests colorama beautifulsoup4
+
 
