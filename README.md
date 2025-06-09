@@ -21,14 +21,7 @@
 ```bash
 git clone https://github.com/Sanket-kumbhar/Subslasher.git
 cd Subslasher
-pip install -r requirements.txt
-
-
-
-
-
-
-usage: subdomain_enum.py [-h] -i INPUT [-a API] [-o OUTPUT] [-t THREADS]
+usage: python3 subslasher.py [-h] -i INPUT [-a API] [-o OUTPUT] [-t THREADS]
 
 OSINT Subdomain Enumerator - Enumerate subdomains using crt.sh and SecurityTrails API
 
