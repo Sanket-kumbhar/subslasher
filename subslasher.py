@@ -1,5 +1,3 @@
-# subslasher.py (Updated)
-
 import argparse
 import os
 import re
@@ -26,7 +24,7 @@ except ImportError:
 FOUND_SUBDOMAINS = set()
 LOCK = threading.Lock()
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0'
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
 }
 
 BANNERS = [
@@ -48,6 +46,10 @@ BANNERS = [
 
 # Functions
 
+def verbose_log(msg):
+    if args.verbose:
+        print(f"[bold cyan][*][/bold cyan] {msg}")
+
 def show_banner():
     if console:
         banner = random.choice(BANNERS)
@@ -55,13 +57,14 @@ def show_banner():
 
 def load_domains(file_path):
     with open(file_path, 'r') as f:
-        return [line.strip().replace('*.','') for line in f if line.strip()]
+        return [line.strip().replace('*.', '') for line in f if line.strip()]
 
 def load_api_keys(file_path):
     with open(file_path, 'r') as f:
         return [line.strip() for line in f if line.strip()]
 
 def crtsh_enum(domain):
+    verbose_log(f"Running crt.sh for {domain}")
     try:
         response = requests.get(f"https://crt.sh/?q=%25.{domain}&output=json", headers=HEADERS, timeout=10)
         if response.ok:
@@ -72,10 +75,11 @@ def crtsh_enum(domain):
                     if name:
                         for sub in name.split('\n'):
                             FOUND_SUBDOMAINS.add((sub.strip(), "crt.sh"))
-    except Exception:
-        pass
+    except Exception as e:
+        verbose_log(f"[crt.sh] Error for {domain}: {e}")
 
 def securitytrails_enum(domain, api_keys):
+    verbose_log(f"Running SecurityTrails for {domain}")
     key_index = 0
     total_keys = len(api_keys)
     headers = {"Content-Type": "application/json"}
@@ -98,15 +102,14 @@ def securitytrails_enum(domain, api_keys):
                 continue
             else:
                 break
-        except:
+        except Exception as e:
+            verbose_log(f"[SecurityTrails] Error for {domain}: {e}")
             key_index += 1
             continue
 
 def google_dork_enum(domain):
-    queries = [
-        f"site:{domain} -www",
-        f"inurl:{domain}"
-    ]
+    verbose_log(f"Running Google Dork for {domain}")
+    queries = [f"site:{domain} -www", f"inurl:{domain}"]
     for query in queries:
         try:
             url = f"https://www.google.com/search?q={requests.utils.quote(query)}"
@@ -121,10 +124,11 @@ def google_dork_enum(domain):
                         parsed = urlparse(match.group(1))
                         if parsed.hostname and domain in parsed.hostname:
                             FOUND_SUBDOMAINS.add((parsed.hostname, "Google Dork"))
-        except:
-            continue
+        except Exception as e:
+            verbose_log(f"[Google Dork] Error for {domain}: {e}")
 
 def duckduckgo_search(domain):
+    verbose_log(f"Running DuckDuckGo search for {domain}")
     try:
         url = f"https://html.duckduckgo.com/html/?q=site:{domain}"
         response = requests.get(url, headers=HEADERS, timeout=10)
@@ -135,8 +139,8 @@ def duckduckgo_search(domain):
             parsed = urlparse(href)
             if parsed.hostname and domain in parsed.hostname:
                 FOUND_SUBDOMAINS.add((parsed.hostname, "DuckDuckGo"))
-    except:
-        pass
+    except Exception as e:
+        verbose_log(f"[DuckDuckGo] Error for {domain}: {e}")
 
 def recurse_subdomains(subdomain, depth):
     parts = subdomain.split('.')
@@ -165,24 +169,23 @@ parser.add_argument("--no-crtsh", action="store_true", help="Disable crt.sh")
 parser.add_argument("--no-st", action="store_true", help="Disable SecurityTrails")
 parser.add_argument("--no-googledork", action="store_true", help="Disable Google Dorks")
 parser.add_argument("--no-websearch", action="store_true", help="Disable Web Search")
+parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 parser.epilog = r"""
 Example:
-  python3 subslasher.py -i domains.txt -a apis.txt -o output.csv
+  python3 subslasher.py -i domains.txt -a apis.txt -o output.csv --verbose
 """
 args = parser.parse_args()
 
 THREADS = args.threads
-
 show_banner()
 
 # Load
-root_domains = load_domains(args.input)
+domains = load_domains(args.input)
 api_keys = load_api_keys(args.api) if args.api else []
-
-# Execution
 threads = []
 
-for domain in root_domains:
+# Run collection
+for domain in domains:
     if not args.no_crtsh:
         threads.append(threading.Thread(target=crtsh_enum, args=(domain,)))
     if not args.no_st and api_keys:
@@ -192,7 +195,6 @@ for domain in root_domains:
     if not args.no_websearch:
         threads.append(threading.Thread(target=duckduckgo_search, args=(domain,)))
 
-# Launch threads
 for t in threads:
     t.start()
     while threading.active_count() > THREADS:
@@ -201,7 +203,7 @@ for t in threads:
 for t in threads:
     t.join()
 
-# Recursively dig subdomains
+# Recursion
 for sub, _ in list(FOUND_SUBDOMAINS):
     recurse_subdomains(sub, args.recursion)
 
